@@ -1,0 +1,12 @@
+{
+    "pointIndexList" : [9, 10, 11, 12],
+    "frameIndexList" : [1, 47, 95, 143, 191],
+    "thresholds" : 0.45,
+    "scale" : 720,
+    "distances" : 50,
+    "starPoint" : {
+        "x" : 0,
+        "y" : 0
+    }
+
+}
