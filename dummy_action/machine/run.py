@@ -1,4 +1,6 @@
 import cv2
+import time
+import numpy as np
 import argparse
 import threading
 from utils import tools
@@ -15,9 +17,9 @@ args = parser.parse_args()
 
 video_path = args.video_path 
 image_path = "output.jpg"
-keyboard_input = ""
-mouse_input = ""
-
+# keyboard_input = ""
+# mouse_input = ""
+start_time = time.time()
 
 manager = tools.Manager(video_path, args.state)
 
@@ -43,25 +45,29 @@ cv2.setMouseCallback('live', mouse_event)
 
 
 while cap.isOpened():
-    manager.update(image_bgr)
-    cv2.imshow('live', manager.image_out)
+    end_time = time.time()
+
+    if (end_time - start_time) > manager.sleep_time:
+        ret, frame = cap.read()
+        if not ret:
+            print("Video End. Exiting ...")
+            break
+        manager.update(frame)
+        cv2.imshow('live', manager.image_out)
+        start_time = time.time()
     
     # setting keyboard event
     keycode = cv2.waitKey(1)
     if keycode == ord('q') or keycode == 27:
         break
     if keycode == 0:  # 按下鍵盤的「上」
-        keyboard_input = "up"
-        print(f"keyboard : {keyboard_input}")
+        manager.slope_modify = np.clip(manager.slope_modify + 0.02, 0, 0.2) 
     if keycode == 1:  # 按下鍵盤的「下」
-        keyboard_input = "down"
-        print(f"keyboard : {keyboard_input}")
-    if keycode == 2:  # 按下鍵盤的「右」
-        keyboard_input = "right"
-        print(f"keyboard : {keyboard_input}")
-    if keycode == 3:  # 按下鍵盤的「左」
-        keyboard_input = "left"
-        print(f"keyboard : {keyboard_input}")
+        manager.slope_modify = np.clip(manager.slope_modify - 0.02, 0, 0.2) 
+    if keycode == 2:  # 按下鍵盤的「左」
+        manager.resistance = np.clip(manager.resistance - 1, 1, 10) 
+    if keycode == 3:  # 按下鍵盤的「右」
+        manager.resistance = np.clip(manager.resistance + 1, 1, 10) 
     
     
 cap.release()
