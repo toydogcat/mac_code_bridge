@@ -10,6 +10,7 @@ from utils import tools
 # Arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--state", type=str, default="run", help="run or ride.")
+parser.add_argument("-rf", "--record_flag", type=str, default="true", help="the record flag.")
 parser.add_argument("-vp", "--video_path", type=str, default=None, help="the video path.")
 parser.add_argument("-vi", "--video_list_index", type=int, default=0, help="the video index in the video list.")
 args = parser.parse_args()
@@ -20,13 +21,14 @@ video_path_list = [
 ]
 
 video_path = args.video_path if args.video_path else video_path_list[args.video_list_index] 
-    
+record_flag = True if args.record_flag == "true" else False
+
 image_path = "output.jpg"
 # keyboard_input = ""
 # mouse_input = ""
 start_time = time.time()
 
-manager = tools.Manager(video_path, args.state)
+manager = tools.Manager(video_path, args.state, record_flag)
 
 image_bgr = cv2.imread(image_path)
 cap = cv2.VideoCapture(video_path)
@@ -43,10 +45,10 @@ def mouse_event(event, x, y, flags, userdata):
     manager.modify_power(x, y)
     
     if event == 1 and flags == 1: # 左健
-        manager.modify_energy()
+        manager.modify_energy(x, y)
     if event == 2 and flags == 2: # 右健
         manager.modify_state("ride") if manager.state == "run" else manager.modify_state("run")
-        if manager.developer:
+        if manager.developer==True and manager.record_flag==False:
             manager.energy_water = 500
             
     
@@ -57,6 +59,7 @@ while cap.isOpened():
     end_time = time.time()
 
     if (end_time - start_time) > manager.sleep_time:
+        spend_time = time.time()
         ret, frame = cap.read()
         if not ret:
             print("Video End. Exiting ...")
@@ -64,6 +67,8 @@ while cap.isOpened():
         manager.update(frame)
         cv2.imshow('live', manager.image_out)
         start_time = time.time()
+        manager.modify_spend_time(time.time()-spend_time)
+        
     
     # setting keyboard event
     keycode = cv2.waitKey(1)
@@ -80,9 +85,9 @@ while cap.isOpened():
     if keycode == 3:  # 按下鍵盤的「右」
         manager.resistance = np.clip(manager.resistance + 1, 1, 10) 
     
-    
+
 cap.release()
 cv2.destroyAllWindows()
-
+manager.out.release()
 
 
