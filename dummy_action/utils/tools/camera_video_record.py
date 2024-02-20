@@ -1,6 +1,7 @@
 import cv2
 import time
 import argparse
+import subprocess
 import numpy as np
 from queue import Queue
 
@@ -13,8 +14,12 @@ from queue import Queue
 # parser.add_argument("-s", "--state", action=argparse.BooleanOptionalAction, help="run or ride.")
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--flag", action='store_true', help="the flag for using display rate.") 
+parser.add_argument("-o", "--optimize", action='store_true', help="the flag for using ffmpeg to optimize the quality of video.") 
+# 越小畫質越好
+parser.add_argument("-c", "--crf", type=int, default=23, help="The quality value for video.")
 parser.add_argument("-ci", "--camera_index", type=int, default=0, help="The camera index.")
 args = parser.parse_args()
+
 
 # capture
 cap = cv2.VideoCapture(args.camera_index)
@@ -39,7 +44,9 @@ fps = 25
 frame_size = (int(width*display_rate), int(heigh*display_rate))
 # 建立 VideoWriter 物件
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-out = cv2.VideoWriter('../../record/camera_record.mp4', fourcc, fps, frame_size)
+
+video_save_path = '../../record/camera_record.mp4'
+out = cv2.VideoWriter(video_save_path, fourcc, fps, frame_size)
 
 
 begin_time = time.time()
@@ -77,8 +84,15 @@ while(True):
     if cv2.waitKey(1) == ord('q'):
         break
 
-
 cap.release()
 out.release()
 cv2.destroyAllWindows()
 
+# ffmpeg -i input.mp4 -vcodec libx264 -crf 23 output.mp4
+if args.optimize:
+    _output = subprocess.check_output(['ffmpeg',
+                                       '-i', video_save_path,
+                                       '-vcodec', 'libx264',
+                                       '-crf', str(args.crf),
+                                       "_opt.".join(video_save_path.rsplit('.', 1))])
+    print(_output)
