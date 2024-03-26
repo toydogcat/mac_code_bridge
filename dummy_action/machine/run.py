@@ -13,6 +13,7 @@ parser.add_argument("-s", "--state", type=str, default="run", help="run or ride.
 parser.add_argument("-rf", "--record_flag", type=str, default="true", help="the record flag.")
 parser.add_argument("-vp", "--video_path", type=str, default=None, help="the video path.")
 parser.add_argument("-vi", "--video_list_index", type=int, default=0, help="the video index in the video list.")
+parser.add_argument("-ew", "--energy_water", type=int, default=5, help="the energy for one bottle of water.")
 args = parser.parse_args()
 
 video_path_list = [
@@ -29,6 +30,8 @@ image_path = "output.jpg"
 start_time = time.time()
 
 manager = tools.Manager(video_path, args.state, record_flag)
+manager.energy_water = args.energy_water
+
 
 image_bgr = cv2.imread(image_path)
 cap = cv2.VideoCapture(video_path)

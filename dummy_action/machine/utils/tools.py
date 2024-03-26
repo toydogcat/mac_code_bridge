@@ -80,7 +80,7 @@ class Manager:
         self.state_rate = 0.7 if state == "run" else 1.5
         
     def modify_energy(self, x, y):
-        self.drink_water = 5
+        self.drink_water = 5  
         diff_x = abs(random.randint(0, 1280) - x)
         diff_y = abs(random.randint(0, 820) - y)
         random_water = 200 if (diff_x + diff_y) == 0 else 100 / (diff_x + diff_y)
